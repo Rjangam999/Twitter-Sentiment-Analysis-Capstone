@@ -15,4 +15,6 @@ def clean_text(text: str) -> str:
     # remove digits 
     text = re.sub(r'\d+', '' , text)
     # remove white spaces 
-    return text.strip()
+    text = text.strip()
+
+    return text 
