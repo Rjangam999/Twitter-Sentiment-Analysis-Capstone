@@ -17,6 +17,4 @@ def clean_text(text: str) -> str:
     # remove white spaces 
     text = text.strip()
 
-    # sometime -- tweets only contains [ links / symbols ] becomes empty or "null" after cleaning..
-    text = text.fillna('')
     return text 
