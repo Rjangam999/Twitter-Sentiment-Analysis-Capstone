@@ -15,6 +15,13 @@ from src.evaluation.metrics import evaluate_classification
 import shap 
 from src.explainability.shap_explainer import explain_logistic_regression
 
+# --- centralized logging 
+from src.utils.config_loader import load_config 
+from src.utils.logger import get_logger 
+
+logger = get_logger("pipelines")
+config = load_config()
+
 import nltk 
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
@@ -26,6 +33,7 @@ from nltk.corpus import stopwords
 # Initialize resources 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
+
 
 def adv_process(text):
 
@@ -41,17 +49,17 @@ def adv_process(text):
 def baseline_ml():
 
     # ---- load data ----
-    print('Loading Data...')
-    train_df = pd.read_csv('data/processed/train.csv', encoding='utf-8')
-    val_df = pd.read_csv('data/processed/val.csv', encoding='utf-8')
+    logger.info("Loading training and validation data")
+    train_df = pd.read_csv(config['data']['train_path'], encoding='utf-8')
+    val_df = pd.read_csv(config['data']['val_path'], encoding='utf-8')
 
-    # -- cleaning (adv_processing):
-    print('Processing text (Lemmatization).....')
+    # --- Text preprocessing :
+    logger.info("Applying lemmatization and stopwords removal with preprocessing...")
     train_df['text'] = train_df['text'].apply(adv_process)
     val_df['text'] = val_df['text'].apply(adv_process)
 
     # --- Vectorization 
-    print('Building Vectorizer.....')
+    logger.info("Building TF-IDF vectorizer..")
     vectorizer = build_tfidf_vectorizer()
     x_train = vectorizer.fit_transform(train_df['text'])
     x_val = vectorizer.transform(val_df['text'])
@@ -60,37 +68,41 @@ def baseline_ml():
     y_val = val_df['target']
 
     # ---- Model Training 
-    print("Training Model...")
+    logger.info("Training Logistic Regression Model")
     model = train_logistic_regression(x_train,y_train)
 
     # ---- Evaluation
-    print('Evaluating.....')
+    logger.info("Evaluating model on validation set..")
     preds = model.predict(x_val)
     report , matrix = evaluate_classification(y_val, preds)
-
-    print('Baseline validation metric Report :\n',report)
-    print('Confusion Matrix :\n', matrix)
+    # print('Baseline validation metric Report :\n',report)
+    # print('Confusion Matrix :\n', matrix)
 
     # ---- Save models (artifacts )
-    os.makedirs("models", exist_ok=True)
+    model_dir = config["artifacts"]['model_dir']
+    os.makedirs(model_dir, exist_ok=True)
 
-    joblib.dump(model, "models/logistic_regression.pkl")
-    joblib.dump(vectorizer, "models/tfidf_vectorizer.pkl")
-    print('Model and Vectorizer Saved successfully..')
+    joblib.dump(model, f"{model_dir}/logistic_regression.pkl")
+    joblib.dump(vectorizer, f"{model_dir}/tfidf_vectorizer.pkl")
+    
+    logger.info("Model and vectorizer saved succesfully..")
 
     # ----- explain model 
-    print('Logistic Regression Explainability plots....')
+    logger.info("Generating SHAP explainability artifacts..")
     feature_names = vectorizer.get_feature_names_out()
+
     sample_idx = np.random.choice(x_val.shape[0], size=50, replace=False)
     x_sample = x_val[sample_idx]
 
-    shap_values = explain_logistic_regression(
+    explain_logistic_regression(
         model, 
         x_sample, 
         feature_names 
     )
 
     # shap.summary_plot(shap_values, x_sample, feature_names=feature_names)
+    logger.info("Training pipeline completed successfully....")
+
 
 
 if __name__ == "__main__":
