@@ -7,4 +7,6 @@ shap
 streamlit
 joblib
 pickle
-python 
+
+pytest
+pyyaml
