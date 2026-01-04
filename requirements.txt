@@ -4,3 +4,11 @@ scikit-learn
 matplotlib
 seaborn 
 shap
+streamlit
+joblib
+pickle
+tensorflow
+keras
+
+pytest
+pyyaml

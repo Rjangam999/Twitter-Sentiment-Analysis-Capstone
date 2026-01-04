@@ -1,5 +1,15 @@
 import re 
 import string 
+import nltk 
+from nltk.corpus import stopwords 
+from nltk.stem import WordNetLemmatizer
+
+# ----- ensures the NLTK resources downloads
+# nltk.download('wordnet', quiet=True)
+# nltk.download('stopwords', quiet=True)
+
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
 
 def clean_text(text: str) -> str: 
     # lower case 
@@ -18,3 +28,13 @@ def clean_text(text: str) -> str:
     text = text.strip()
 
     return text 
+
+def adv_process(text):
+
+    # sometime csv loading convert empty strings to NaN(float), or None: 
+    if not isinstance(text, str): 
+        return ""
+    
+    # process text for baseline ML modeling
+    words = [lemmatizer.lemmatize(w) for w in text.split() if w not in stop_words]
+    return ' '.join(words).strip()

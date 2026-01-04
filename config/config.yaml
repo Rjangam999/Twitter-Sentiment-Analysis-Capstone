@@ -1,0 +1,20 @@
+data:
+  raw_path: data/raw/twitter-raw-data.csv
+  train_path: data/processed/train.csv
+  val_path: data/processed\val.csv
+  test_path : data/processed/test.csv
+
+model:
+  vectorizer_path: models/tfidf_vectorizer.pkl
+  model_path: models/logistic_regression.pkl
+
+training:
+  test_size: 0.2
+  val_size: 0.1
+  random_size: 42
+
+inference: 
+  max_input_length: 300
+
+artifacts:
+  model_dir: models
