@@ -17,4 +17,4 @@ inference:
   max_input_length: 300
 
 artifacts:
-  model_dir: models/
+  model_dir: models

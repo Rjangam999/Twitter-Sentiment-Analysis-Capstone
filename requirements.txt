@@ -7,6 +7,8 @@ shap
 streamlit
 joblib
 pickle
+tensorflow
+keras
 
 pytest
 pyyaml
